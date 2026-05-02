@@ -1,0 +1,67 @@
+{% extends "core/base.html" %}
+{% block title %}Goals{% endblock %}
+{% block page_title %}Financial Goals{% endblock %}
+
+{% block content %}
+<div style="text-align:right;margin-bottom:1rem;">
+  <a href="{% url 'create_goal' %}" class="btn btn-primary">+ Add Goal</a>
+</div>
+
+{% if goal_data %}
+  <div class="grid-2">
+    {% for gd in goal_data %}
+      <div class="card">
+        <div class="flex justify-between items-center mb-2">
+          <strong>🎯 {{ gd.goal.name }}</strong>
+          <span class="badge {% if gd.status == 'Completed' %}badge-done{% else %}badge-inprog{% endif %}">
+            {{ gd.status }}
+          </span>
+        </div>
+
+        <div class="progress-wrap mb-2">
+          <div class="progress-bar {% if gd.status == 'Completed' %}bar-green{% else %}bar-orange{% endif %}"
+               style="width: {{ gd.progress }}%"></div>
+        </div>
+
+        <div class="grid-3 text-sm text-muted mb-2">
+          <div>
+            <div class="fw-bold" style="color:var(--text)">${{ gd.goal.current_amount|floatformat:2 }}</div>Saved
+          </div>
+          <div>
+            <div class="fw-bold" style="color:var(--text)">${{ gd.goal.target_amount|floatformat:2 }}</div>Target
+          </div>
+          <div>
+            <div class="fw-bold" style="color:var(--text)">{{ gd.progress }}%</div>Progress
+          </div>
+        </div>
+
+        <div class="text-sm text-muted mb-2">
+          📅 Deadline: {{ gd.goal.deadline }}
+          {% if gd.status != 'Completed' %}
+            &nbsp;|&nbsp; Need ~${{ gd.monthly_needed }}/month
+          {% endif %}
+        </div>
+
+        <div class="flex gap-2">
+          {% if gd.status != 'Completed' %}
+            <a href="{% url 'contribute_goal' gd.goal.pk %}" class="btn btn-success btn-sm">💵 Contribute</a>
+          {% endif %}
+          <form method="post" action="{% url 'delete_goal' gd.goal.pk %}"
+                onsubmit="return confirm('Delete this goal?')">
+            {% csrf_token %}
+            <button class="btn btn-danger btn-sm">🗑 Delete</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="card">
+    <div class="empty-state">
+      <div class="icon">🎯</div>
+      <p>No goals yet. Set a financial goal to start saving!</p>
+      <a href="{% url 'create_goal' %}" class="btn btn-primary btn-sm mt-2">Add First Goal</a>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

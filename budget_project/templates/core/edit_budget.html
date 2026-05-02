@@ -1,0 +1,24 @@
+{% extends "core/base.html" %}
+{% block title %}Edit Budget{% endblock %}
+{% block page_title %}Edit Budget{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:520px;">
+  <div class="card-header">
+    <span class="card-title">✏️ Edit Budget — {{ budget.category }}</span>
+    <a href="{% url 'budgets' %}" class="btn btn-outline btn-sm">← Back</a>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="form-error">{{ field.errors }}</div>{% endif %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">💾 Update Budget</button>
+    <a href="{% url 'budgets' %}" class="btn btn-outline" style="margin-left:.5rem;">Cancel</a>
+  </form>
+</div>
+{% endblock %}

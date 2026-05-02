@@ -1,0 +1,27 @@
+{% extends "core/base.html" %}
+{% block title %}Create Budget{% endblock %}
+{% block page_title %}Create Budget{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:520px;">
+  <div class="card-header">
+    <span class="card-title">📊 New Budget</span>
+    <a href="{% url 'budgets' %}" class="btn btn-outline btn-sm">← Back</a>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<p class="form-help">{{ field.help_text }}</p>{% endif %}
+        {% if field.errors %}<div class="form-error">{{ field.errors }}</div>{% endif %}
+      </div>
+    {% endfor %}
+    {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors }}</div>{% endif %}
+    <button type="submit" class="btn btn-primary">💾 Create Budget</button>
+    <a href="{% url 'budgets' %}" class="btn btn-outline" style="margin-left:.5rem;">Cancel</a>
+  </form>
+</div>
+{% endblock %}

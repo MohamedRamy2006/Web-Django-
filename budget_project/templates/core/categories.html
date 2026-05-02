@@ -1,0 +1,45 @@
+{% extends "core/base.html" %}
+{% block title %}Categories{% endblock %}
+{% block page_title %}Categories{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title mb-2">➕ Add Category</div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Category Name</label>
+        {{ form.name }}
+        {% if form.name.errors %}<div class="form-error">{{ form.name.errors }}</div>{% endif %}
+      </div>
+      <button type="submit" class="btn btn-primary">Create</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title mb-2">🏷️ Your Categories</div>
+    {% if categories %}
+      <table>
+        <thead><tr><th>Name</th><th></th></tr></thead>
+        <tbody>
+          {% for cat in categories %}
+          <tr>
+            <td>{{ cat.name }}</td>
+            <td>
+              <form method="post" action="{% url 'delete_category' cat.pk %}"
+                    onsubmit="return confirm('Delete category?')">
+                {% csrf_token %}
+                <button class="btn btn-danger btn-sm">🗑</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="text-muted text-sm">No categories yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

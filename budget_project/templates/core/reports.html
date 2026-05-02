@@ -1,0 +1,144 @@
+{% extends "core/base.html" %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Reports & Analytics{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Date range selector -->
+<div class="card mb-3" style="margin-bottom:1.25rem;">
+  <form method="get" class="flex gap-3 items-center" style="flex-wrap:wrap;">
+    <div>
+      <label class="form-label">From</label>
+      {{ form.period_start }}
+    </div>
+    <div>
+      <label class="form-label">To</label>
+      {{ form.period_end }}
+    </div>
+    <div style="margin-top:1.4rem;">
+      <button type="submit" class="btn btn-primary">📊 Generate Report</button>
+    </div>
+    {% if form.errors %}
+      <div class="form-error">{{ form.non_field_errors }}</div>
+    {% endif %}
+  </form>
+</div>
+
+{% if report_data %}
+  {% if report_data.has_data %}
+
+    <!-- Summary cards -->
+    <div class="stats-grid" style="margin-bottom:1.25rem;">
+      <div class="stat-card">
+        <div class="stat-icon green">⬆️</div>
+        <div>
+          <div class="stat-label">Total Income</div>
+          <div class="stat-value positive">${{ report_data.total_income|floatformat:2 }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon red">⬇️</div>
+        <div>
+          <div class="stat-label">Total Expenses</div>
+          <div class="stat-value negative">${{ report_data.total_expenses|floatformat:2 }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon {% if report_data.net >= 0 %}blue{% else %}red{% endif %}">💰</div>
+        <div>
+          <div class="stat-label">Net</div>
+          <div class="stat-value {% if report_data.net >= 0 %}positive{% else %}negative{% endif %}">
+            ${{ report_data.net|floatformat:2 }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Pie chart: expenses by category -->
+      <div class="card">
+        <div class="card-title mb-2">Expenses by Category</div>
+        {% if report_data.category_totals %}
+          <canvas id="pieChart" height="220"></canvas>
+          <table style="margin-top:1rem;">
+            <thead><tr><th>Category</th><th>Amount</th></tr></thead>
+            <tbody>
+              {% for cat, total in report_data.category_totals.items %}
+                <tr>
+                  <td>{{ cat }}</td>
+                  <td class="fw-bold negative">${{ total|floatformat:2 }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="text-muted text-sm">No expense data for this period.</p>
+        {% endif %}
+      </div>
+
+      <!-- Bar chart: income vs expenses by week -->
+      <div class="card">
+        <div class="card-title mb-2">Income vs Expenses (Weekly)</div>
+        {% if report_data.weekly_data %}
+          <canvas id="barChart" height="220"></canvas>
+        {% else %}
+          <p class="text-muted text-sm">No weekly data for this period.</p>
+        {% endif %}
+      </div>
+    </div>
+
+  {% else %}
+    <div class="card">
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <p>No transaction data available for this period.</p>
+      </div>
+    </div>
+  {% endif %}
+{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+{% if report_data and report_data.has_data %}
+
+// ---- Pie chart (expenses by category) ----
+{% if report_data.category_totals %}
+const pieLabels = [{% for cat in report_data.category_totals.keys %}"{{ cat }}",{% endfor %}];
+const pieData   = [{% for v in report_data.category_totals.values %}{{ v }},{% endfor %}];
+const pieColors = [
+  '#4f46e5','#10b981','#f59e0b','#ef4444','#06b6d4',
+  '#8b5cf6','#ec4899','#14b8a6','#f97316','#84cc16','#6366f1','#a78bfa'
+];
+new Chart(document.getElementById('pieChart'), {
+  type: 'pie',
+  data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: pieColors }] },
+  options: { plugins: { legend: { position: 'bottom' } } }
+});
+{% endif %}
+
+// ---- Bar chart (weekly income vs expense) ----
+{% if report_data.weekly_data %}
+const weeks   = [{% for w in report_data.weekly_data.keys %}"{{ w }}",{% endfor %}];
+const incomes = [{% for v in report_data.weekly_data.values %}{{ v.income }},{% endfor %}];
+const expenses= [{% for v in report_data.weekly_data.values %}{{ v.expense }},{% endfor %}];
+new Chart(document.getElementById('barChart'), {
+  type: 'bar',
+  data: {
+    labels: weeks,
+    datasets: [
+      { label: 'Income',  data: incomes,  backgroundColor: '#10b981' },
+      { label: 'Expenses',data: expenses, backgroundColor: '#ef4444' }
+    ]
+  },
+  options: { responsive: true, plugins: { legend: { position: 'top' } } }
+});
+{% endif %}
+
+{% endif %}
+</script>
+{% endblock %}

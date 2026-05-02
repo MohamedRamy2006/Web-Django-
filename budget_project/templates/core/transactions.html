@@ -1,0 +1,77 @@
+{% extends "core/base.html" %}
+{% block title %}Transactions{% endblock %}
+{% block page_title %}Transactions{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">All Transactions</span>
+    <a href="{% url 'add_transaction' %}" class="btn btn-primary">+ Add Transaction</a>
+  </div>
+
+  <!-- Filters -->
+  <form method="get" class="flex gap-3 mb-3" style="flex-wrap:wrap;align-items:flex-end;">
+    <div>
+      <label class="form-label">Type</label>
+      <select name="type" class="form-select" style="width:auto;" onchange="this.form.submit()">
+        <option value="">All Types</option>
+        <option value="INCOME" {% if selected_type == 'INCOME' %}selected{% endif %}>Income</option>
+        <option value="EXPENSE" {% if selected_type == 'EXPENSE' %}selected{% endif %}>Expense</option>
+      </select>
+    </div>
+    <div>
+      <label class="form-label">Category</label>
+      <select name="category" class="form-select" style="width:auto;" onchange="this.form.submit()">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:'s' %}selected{% endif %}>
+            {{ cat.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    {% if selected_type or selected_category %}
+      <a href="{% url 'transactions' %}" class="btn btn-outline btn-sm">✕ Clear</a>
+    {% endif %}
+  </form>
+
+  {% if transactions %}
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th><th>Amount</th><th>Category</th>
+          <th>Description</th><th>Payment</th><th>Date</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for txn in transactions %}
+        <tr>
+          <td><span class="badge {% if txn.transaction_type == 'INCOME' %}badge-income{% else %}badge-expense{% endif %}">
+            {{ txn.transaction_type }}
+          </span></td>
+          <td class="fw-bold {% if txn.transaction_type == 'INCOME' %}positive{% else %}negative{% endif %}">
+            {% if txn.transaction_type == 'INCOME' %}+{% else %}-{% endif %}${{ txn.amount|floatformat:2 }}
+          </td>
+          <td>{{ txn.category|default:"—" }}</td>
+          <td class="text-muted">{{ txn.description|default:"—"|truncatechars:40 }}</td>
+          <td><span class="tag">{{ txn.payment_method|default:"—" }}</span></td>
+          <td class="text-muted text-sm">{{ txn.date|date:"M d, Y H:i" }}</td>
+          <td>
+            <form method="post" action="{% url 'delete_transaction' txn.pk %}" onsubmit="return confirm('Delete this transaction?')">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">
+      <div class="icon">💳</div>
+      <p>No transactions found.</p>
+      <a href="{% url 'add_transaction' %}" class="btn btn-primary btn-sm mt-2">Add Transaction</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

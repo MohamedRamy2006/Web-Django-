@@ -1,0 +1,34 @@
+{% extends "core/base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">🔔 All Notifications</span>
+  </div>
+  {% if notifications %}
+    <table>
+      <thead>
+        <tr><th>Message</th><th>Date</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for n in notifications %}
+        <tr>
+          <td>{{ n.message }}</td>
+          <td class="text-muted text-sm">{{ n.created_at|date:"M d, Y H:i" }}</td>
+          <td><span class="badge {% if n.is_read %}badge-ontrack{% else %}badge-near{% endif %}">
+            {% if n.is_read %}Read{% else %}Unread{% endif %}
+          </span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">
+      <div class="icon">🔔</div>
+      <p>No notifications yet.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

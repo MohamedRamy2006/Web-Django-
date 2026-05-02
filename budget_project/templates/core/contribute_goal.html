@@ -1,0 +1,33 @@
+{% extends "core/base.html" %}
+{% block title %}Contribute to Goal{% endblock %}
+{% block page_title %}Contribute to Goal{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:420px;">
+  <div class="card-header">
+    <span class="card-title">💵 Add to "{{ goal.name }}"</span>
+    <a href="{% url 'goals' %}" class="btn btn-outline btn-sm">← Back</a>
+  </div>
+
+  <div class="mb-3">
+    <div class="progress-wrap mb-1">
+      <div class="progress-bar bar-orange" style="width: {{ goal.get_progress_percentage }}%"></div>
+    </div>
+    <div class="flex justify-between text-sm text-muted">
+      <span>${{ goal.current_amount|floatformat:2 }} saved</span>
+      <span>${{ goal.target_amount|floatformat:2 }} goal</span>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label class="form-label">{{ form.amount.label }}</label>
+      {{ form.amount }}
+      {% if form.amount.errors %}<div class="form-error">{{ form.amount.errors }}</div>{% endif %}
+    </div>
+    <button type="submit" class="btn btn-success">💾 Add Contribution</button>
+    <a href="{% url 'goals' %}" class="btn btn-outline" style="margin-left:.5rem;">Cancel</a>
+  </form>
+</div>
+{% endblock %}

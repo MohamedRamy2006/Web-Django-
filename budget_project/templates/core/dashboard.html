@@ -1,0 +1,187 @@
+{% extends "core/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Stat Cards (US #10) -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue">💰</div>
+    <div>
+      <div class="stat-label">Total Balance</div>
+      <div class="stat-value {% if total_balance >= 0 %}positive{% else %}negative{% endif %}">
+        ${{ total_balance|floatformat:2 }}
+      </div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green">⬆️</div>
+    <div>
+      <div class="stat-label">Monthly Income</div>
+      <div class="stat-value positive">${{ monthly_income|floatformat:2 }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red">⬇️</div>
+    <div>
+      <div class="stat-label">Monthly Expenses</div>
+      <div class="stat-value negative">${{ monthly_expenses|floatformat:2 }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon purple">💳</div>
+    <div>
+      <div class="stat-label">Transactions</div>
+      <div class="stat-value">{{ transaction_count }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon orange">📊</div>
+    <div>
+      <div class="stat-label">Active Budgets</div>
+      <div class="stat-value">{{ budget_count }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon blue">🎯</div>
+    <div>
+      <div class="stat-label">Goals</div>
+      <div class="stat-value">{{ goal_count }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Budget Warnings (US #5) -->
+{% for bd in budget_data %}
+  {% if bd.status == "Exceeded" %}
+    <div class="alert alert-error">
+      ❌ <strong>Budget Exceeded — {{ bd.budget.category }}!</strong>
+      You've spent ${{ bd.spent|floatformat:2 }} of your ${{ bd.budget.amount }} budget ({{ bd.percentage }}%).
+    </div>
+  {% elif bd.status == "Near Limit" %}
+    <div class="alert alert-warning">
+      ⚠️ <strong>Budget Alert — {{ bd.budget.category }}</strong>:
+      You've used {{ bd.percentage }}% of your ${{ bd.budget.amount }} budget.
+    </div>
+  {% endif %}
+{% endfor %}
+
+<div class="grid-2">
+
+  <!-- Recent Transactions -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Recent Transactions</span>
+      <a href="{% url 'add_transaction' %}" class="btn btn-primary btn-sm">+ Add</a>
+    </div>
+    {% if recent_transactions %}
+      <table>
+        <thead>
+          <tr><th>Type</th><th>Category</th><th>Amount</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+          {% for txn in recent_transactions %}
+          <tr>
+            <td><span class="badge {% if txn.transaction_type == 'INCOME' %}badge-income{% else %}badge-expense{% endif %}">
+              {{ txn.transaction_type }}
+            </span></td>
+            <td>{{ txn.category|default:"—" }}</td>
+            <td class="fw-bold {% if txn.transaction_type == 'INCOME' %}positive{% else %}negative{% endif %}">
+              {% if txn.transaction_type == 'INCOME' %}+{% else %}-{% endif %}${{ txn.amount|floatformat:2 }}
+            </td>
+            <td class="text-muted text-sm">{{ txn.date|date:"M d, Y" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="mt-2"><a href="{% url 'transactions' %}" class="btn btn-outline btn-sm">View All</a></div>
+    {% else %}
+      <div class="empty-state">
+        <div class="icon">💳</div>
+        <p>No transactions yet.</p>
+        <a href="{% url 'add_transaction' %}" class="btn btn-primary btn-sm mt-2">Add First Transaction</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Budget Overview (US #5) -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Budget Overview</span>
+      <a href="{% url 'create_budget' %}" class="btn btn-primary btn-sm">+ New</a>
+    </div>
+    {% if budget_data %}
+      {% for bd in budget_data %}
+        <div class="mb-3">
+          <div class="flex justify-between items-center mb-1">
+            <span class="fw-bold text-sm">{{ bd.budget.category }}</span>
+            <span class="badge
+              {% if bd.status == 'Exceeded' %}badge-exceeded
+              {% elif bd.status == 'Near Limit' %}badge-near
+              {% else %}badge-ontrack{% endif %}">
+              {{ bd.status }}
+            </span>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar
+              {% if bd.percentage >= 100 %}bar-red
+              {% elif bd.percentage >= bd.budget.alert_threshold %}bar-orange
+              {% else %}bar-green{% endif %}"
+              style="width: {% if bd.percentage > 100 %}100{% else %}{{ bd.percentage }}{% endif %}%">
+            </div>
+          </div>
+          <div class="flex justify-between text-sm text-muted mt-1">
+            <span>${{ bd.spent|floatformat:2 }} spent</span>
+            <span>${{ bd.budget.amount|floatformat:2 }} limit</span>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="icon">📊</div>
+        <p>No budgets set up yet.</p>
+        <a href="{% url 'create_budget' %}" class="btn btn-primary btn-sm mt-2">Create Budget</a>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Goals Overview -->
+<div class="card mt-3" style="margin-top:1.25rem">
+  <div class="card-header">
+    <span class="card-title">Financial Goals</span>
+    <a href="{% url 'create_goal' %}" class="btn btn-primary btn-sm">+ Add Goal</a>
+  </div>
+  {% if goals %}
+    <div class="grid-2">
+      {% for g in goals %}
+        <div style="padding:.75rem;border:1px solid var(--border);border-radius:8px;">
+          <div class="flex justify-between items-center mb-1">
+            <strong>{{ g.name }}</strong>
+            <span class="badge {% if g.get_status == 'Completed' %}badge-done{% else %}badge-inprog{% endif %}">
+              {{ g.get_status }}
+            </span>
+          </div>
+          <div class="progress-wrap mb-1">
+            <div class="progress-bar {% if g.get_status == 'Completed' %}bar-green{% else %}bar-orange{% endif %}"
+                 style="width: {{ g.get_progress_percentage }}%"></div>
+          </div>
+          <div class="flex justify-between text-sm text-muted">
+            <span>${{ g.current_amount|floatformat:2 }} saved</span>
+            <span>${{ g.target_amount|floatformat:2 }} goal</span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="icon">🎯</div>
+      <p>No goals yet. Start saving toward something!</p>
+      <a href="{% url 'create_goal' %}" class="btn btn-primary btn-sm mt-2">Set a Goal</a>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

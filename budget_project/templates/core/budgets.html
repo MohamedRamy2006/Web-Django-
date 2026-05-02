@@ -1,0 +1,65 @@
+{% extends "core/base.html" %}
+{% block title %}Budgets{% endblock %}
+{% block page_title %}Budgets{% endblock %}
+
+{% block content %}
+<div class="card-header" style="margin-bottom:1rem;">
+  <span></span>
+  <a href="{% url 'create_budget' %}" class="btn btn-primary">+ New Budget</a>
+</div>
+
+{% if budget_data %}
+  <div class="grid-2">
+    {% for bd in budget_data %}
+      <div class="card">
+        <div class="flex justify-between items-center mb-2">
+          <strong>{{ bd.budget.category }}</strong>
+          <span class="badge
+            {% if bd.status == 'Exceeded' %}badge-exceeded
+            {% elif bd.status == 'Near Limit' %}badge-near
+            {% else %}badge-ontrack{% endif %}">
+            {{ bd.status }}
+          </span>
+        </div>
+
+        <div class="progress-wrap mb-2">
+          <div class="progress-bar
+            {% if bd.percentage >= 100 %}bar-red
+            {% elif bd.percentage >= bd.budget.alert_threshold %}bar-orange
+            {% else %}bar-green{% endif %}"
+            style="width: {% if bd.percentage > 100 %}100{% else %}{{ bd.percentage }}{% endif %}%">
+          </div>
+        </div>
+
+        <div class="grid-3 text-sm text-muted mb-2">
+          <div><div class="fw-bold text-sm" style="color:var(--text)">${{ bd.spent|floatformat:2 }}</div>Spent</div>
+          <div><div class="fw-bold text-sm" style="color:var(--text)">${{ bd.remaining|floatformat:2 }}</div>Remaining</div>
+          <div><div class="fw-bold text-sm" style="color:var(--text)">{{ bd.percentage }}%</div>Used</div>
+        </div>
+
+        <div class="text-sm text-muted mb-2">
+          📅 {{ bd.budget.start_date }} – {{ bd.budget.end_date }}
+          &nbsp;|&nbsp; Alert at {{ bd.budget.alert_threshold }}%
+        </div>
+
+        <div class="flex gap-2">
+          <a href="{% url 'edit_budget' bd.budget.pk %}" class="btn btn-outline btn-sm">✏️ Edit</a>
+          <form method="post" action="{% url 'delete_budget' bd.budget.pk %}"
+                onsubmit="return confirm('Delete this budget?')">
+            {% csrf_token %}
+            <button class="btn btn-danger btn-sm">🗑 Delete</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="card">
+    <div class="empty-state">
+      <div class="icon">📊</div>
+      <p>No budgets yet. Create one to start tracking spending.</p>
+      <a href="{% url 'create_budget' %}" class="btn btn-primary btn-sm mt-2">Create Budget</a>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
