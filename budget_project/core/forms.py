@@ -9,9 +9,9 @@ from django.utils import timezone
 from .models import User, Transaction, Budget, Goal, Category, TransactionType
 
 
-# ---------------------------------------------------------------------------
+
 # US #1 - Sign Up
-# ---------------------------------------------------------------------------
+
 class SignUpForm(UserCreationForm):
     """Registration form: full_name, email, password (US #1 data dictionary)."""
 
@@ -49,9 +49,9 @@ class SignUpForm(UserCreationForm):
         return user
 
 
-# ---------------------------------------------------------------------------
+
 # US #2 - Login
-# ---------------------------------------------------------------------------
+
 class LoginForm(forms.Form):
     """Login form using email + password."""
 
