@@ -1,8 +1,8 @@
 """
-Django settings for budget_project.
+Django settings for budget_project
 """
 from pathlib import Path
-
+# Defines the root directory of the project.
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-budget-app-cs251-key-change-in-production"
 DEBUG = True
