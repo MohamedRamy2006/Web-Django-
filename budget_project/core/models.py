@@ -9,9 +9,9 @@ from django.db import models
 from django.utils import timezone
 
 
-# ---------------------------------------------------------------------------
+# -----------------------------------
 # Enumeration: TransactionType (US #3)
-# ---------------------------------------------------------------------------
+# -----------------------------------
 class TransactionType(models.TextChoices):
     """Defines whether a transaction is INCOME or EXPENSE."""
     INCOME = "INCOME", "Income"
