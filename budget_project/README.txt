@@ -137,7 +137,7 @@ DESIGN PATTERNS USED
      BudgetService.check_budget_alerts() — subclasses can override.
 
 NOTE ON DATABASE PERSISTENCE
------------------------------
+---------------------------------
   All data is stored in db.sqlite3 (relative to manage.py).
   The database is created automatically on first `python manage.py migrate`.
   Data persists across server restarts as required by Task 3.
