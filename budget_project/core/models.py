@@ -18,9 +18,9 @@ class TransactionType(models.TextChoices):
     EXPENSE = "EXPENSE", "Expense"
 
 
-# ---------------------------------------------------------------------------
+# -------------------------------------
 # Entity: User (extends Django AbstractUser) (US #1)
-# ---------------------------------------------------------------------------
+# -------------------------------------
 class User(AbstractUser):
     """
     Represents an application user.
